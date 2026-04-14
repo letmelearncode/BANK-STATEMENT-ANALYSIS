@@ -73,6 +73,16 @@ def health_check():
     return {"status": "ok"}
 
 
+@app.get("/categories", response_model=List[str], tags=["system"])
+def list_categories():
+    """Return the ordered list of expense categories recognised by the ML categoriser.
+
+    The frontend fetches this endpoint so the category list is always in sync
+    with the backend — no duplication or drift.
+    """
+    return [name for name, _ in categorizer.CATEGORY_RULES] + ["Others"]
+
+
 # ── Auth ──────────────────────────────────────────────────────────────────────
 
 @app.post("/auth/register", response_model=schemas.UserOut, tags=["auth"])
