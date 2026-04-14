@@ -36,7 +36,11 @@ def fetch_categories() -> List[str]:
         resp = requests.get(f"{BACKEND_URL}/categories", timeout=5)
         if resp.status_code == 200:
             return resp.json()
-        logger.warning("Failed to fetch categories: HTTP %s", resp.status_code)
+        logger.warning(
+            "Failed to fetch categories: HTTP %s — %s",
+            resp.status_code,
+            resp.text[:200],
+        )
     except requests.exceptions.RequestException as exc:
         logger.warning("Could not reach backend to fetch categories: %s", exc)
         st.warning(

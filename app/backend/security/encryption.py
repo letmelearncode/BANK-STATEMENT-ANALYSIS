@@ -17,6 +17,11 @@ def _build_fernet() -> Fernet:
             "SECRET_KEY environment variable is not set. "
             "Set a strong random SECRET_KEY before starting the application."
         )
+    if len(secret) < 32:
+        raise RuntimeError(
+            "SECRET_KEY is too short (minimum 32 characters). "
+            "Use a cryptographically random value, e.g.: openssl rand -hex 32"
+        )
     # Derive a 32-byte key from the secret using SHA-256 then base64url-encode it.
     key = base64.urlsafe_b64encode(hashlib.sha256(secret.encode()).digest())
     return Fernet(key)
