@@ -126,7 +126,6 @@ def parse_qif(content: bytes | str) -> pd.DataFrame:
     for line in text.splitlines():
         if not line.strip():
             continue
-        code, _, value = line.partition("")
         code = line[0]
         value = line[1:].strip()
         if code == "D":  # date

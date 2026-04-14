@@ -30,9 +30,9 @@ class FnbParser(BaseParser):
                 date_str, desc, amt_str, indicator, bal_str = m.groups()
                 try:
                     amount = _clean(amt_str)
-                    # FNB: Cr means money in (positive), Dr means money out (negative)
-                    if indicator == "Cr":
-                        amount = -amount  # invert so debits are negative, credits positive
+                    # FNB uses Cr for credits (money in, positive) and Dr for debits (money out, negative)
+                    if indicator == "Dr":
+                        amount = -amount
                     rows.append(
                         {
                             "Date": pd.to_datetime(date_str, format="%d %b"),

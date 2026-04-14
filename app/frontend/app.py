@@ -22,6 +22,28 @@ import streamlit as st
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000").rstrip("/")
 
+# Expense categories — must mirror backend ml/categorizer.py CATEGORY_RULES
+EXPENSE_CATEGORIES: List[str] = [
+    "Salary",
+    "Credits",
+    "Rent & Utilities",
+    "Groceries",
+    "Transport",
+    "Insurance",
+    "Medical",
+    "Entertainment",
+    "Shopping",
+    "Cellular Expenses",
+    "Bank Charges",
+    "Payments",
+    "Cash Deposits/Withdrawals",
+    "Interest and Fees",
+    "Unsuccessful Transactions",
+    "Education",
+    "Savings & Investments",
+    "Others",
+]
+
 st.set_page_config(
     page_title="Bank Statement Analysis",
     page_icon="🏦",
@@ -403,8 +425,7 @@ def page_analysis() -> None:
 
         # Re-categorise a transaction
         with st.expander("✏️ Re-categorise a Transaction"):
-            from ml.categorizer import CATEGORY_RULES
-            category_options = [r[0] for r in CATEGORY_RULES] + ["Others"]
+            category_options = EXPENSE_CATEGORIES
             tx_idx = st.number_input("Transaction Index (0-based)", min_value=0,
                                      max_value=len(transactions) - 1, step=1)
             new_cat = st.selectbox("New Category", category_options)
@@ -486,8 +507,7 @@ def page_budgeting() -> None:
 
     # Set budget
     st.subheader("Set Monthly Limit")
-    from ml.categorizer import CATEGORY_RULES
-    category_options = [r[0] for r in CATEGORY_RULES]
+    category_options = EXPENSE_CATEGORIES
     with st.form("budget_form"):
         col1, col2 = st.columns(2)
         with col1:

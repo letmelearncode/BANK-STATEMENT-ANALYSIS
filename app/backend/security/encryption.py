@@ -5,13 +5,24 @@ and it is encrypted at rest with a key derived from the application SECRET_KEY.
 """
 import base64
 import hashlib
+import logging
 import os
 
 from cryptography.fernet import Fernet
 
+logger = logging.getLogger(__name__)
+
+_DEFAULT_KEY = "change-me-in-production-use-a-long-random-string"
+
 
 def _build_fernet() -> Fernet:
-    secret = os.getenv("SECRET_KEY", "change-me-in-production-use-a-long-random-string")
+    secret = os.getenv("SECRET_KEY", "")
+    if not secret:
+        logger.warning(
+            "SECRET_KEY environment variable is not set. "
+            "Using an insecure default — set SECRET_KEY before deploying to production."
+        )
+        secret = _DEFAULT_KEY
     # Derive a 32-byte key from the secret using SHA-256 then base64url-encode it.
     key = base64.urlsafe_b64encode(hashlib.sha256(secret.encode()).digest())
     return Fernet(key)
