@@ -22,27 +22,21 @@ import streamlit as st
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000").rstrip("/")
 
-# Expense categories — must mirror backend ml/categorizer.py CATEGORY_RULES
-EXPENSE_CATEGORIES: List[str] = [
-    "Salary",
-    "Credits",
-    "Rent & Utilities",
-    "Groceries",
-    "Transport",
-    "Insurance",
-    "Medical",
-    "Entertainment",
-    "Shopping",
-    "Cellular Expenses",
-    "Bank Charges",
-    "Payments",
-    "Cash Deposits/Withdrawals",
-    "Interest and Fees",
-    "Unsuccessful Transactions",
-    "Education",
-    "Savings & Investments",
-    "Others",
-]
+
+@st.cache_data(ttl=3600)
+def fetch_categories() -> List[str]:
+    """Fetch the expense category list from the backend.
+
+    Results are cached for one hour so the API is not called on every re-render.
+    Falls back to an empty list if the backend is unreachable at startup.
+    """
+    try:
+        resp = requests.get(f"{BACKEND_URL}/categories", timeout=5)
+        if resp.status_code == 200:
+            return resp.json()
+    except requests.exceptions.RequestException:
+        pass
+    return []
 
 st.set_page_config(
     page_title="Bank Statement Analysis",
@@ -425,7 +419,7 @@ def page_analysis() -> None:
 
         # Re-categorise a transaction
         with st.expander("✏️ Re-categorise a Transaction"):
-            category_options = EXPENSE_CATEGORIES
+            category_options = fetch_categories()
             tx_idx = st.number_input("Transaction Index (0-based)", min_value=0,
                                      max_value=len(transactions) - 1, step=1)
             new_cat = st.selectbox("New Category", category_options)
@@ -507,7 +501,7 @@ def page_budgeting() -> None:
 
     # Set budget
     st.subheader("Set Monthly Limit")
-    category_options = EXPENSE_CATEGORIES
+    category_options = fetch_categories()
     with st.form("budget_form"):
         col1, col2 = st.columns(2)
         with col1:
