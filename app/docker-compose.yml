@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile.backend
     container_name: bsa_backend
     environment:
-      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - SECRET_KEY=${SECRET_KEY:?SECRET_KEY must be set in .env before running docker-compose}
       - DATABASE_URL=sqlite:////data/bank_analysis.db
       - MODEL_PATH=/app/ml_models/loan_eligibility.joblib
       - MAX_FILE_SIZE_MB=${MAX_FILE_SIZE_MB:-10}

@@ -11,6 +11,7 @@ Pages (managed via st.session_state["page"]):
 from __future__ import annotations
 
 import os
+import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -21,6 +22,7 @@ import requests
 import streamlit as st
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000").rstrip("/")
+logger = logging.getLogger(__name__)
 
 
 @st.cache_data(ttl=3600)
@@ -28,14 +30,23 @@ def fetch_categories() -> List[str]:
     """Fetch the expense category list from the backend.
 
     Results are cached for one hour so the API is not called on every re-render.
-    Falls back to an empty list if the backend is unreachable at startup.
+    Falls back to an empty list and warns the user if the backend is unreachable.
     """
     try:
         resp = requests.get(f"{BACKEND_URL}/categories", timeout=5)
         if resp.status_code == 200:
             return resp.json()
-    except requests.exceptions.RequestException:
-        pass
+        logger.warning(
+            "Failed to fetch categories: HTTP %s — %s",
+            resp.status_code,
+            resp.text[:200],
+        )
+    except requests.exceptions.RequestException as exc:
+        logger.warning("Could not reach backend to fetch categories: %s", exc)
+        st.warning(
+            "⚠️ Could not load expense categories from the backend. "
+            "Category dropdowns will be empty until the backend is available."
+        )
     return []
 
 st.set_page_config(
